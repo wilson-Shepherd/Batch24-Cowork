@@ -1,0 +1,37 @@
+{
+  "urls": [
+    {
+      "id": "1",
+      "longUrl": "https://www.example.com",
+      "shortUrl": "abcdef",
+      "expiryDate": "2024-12-31T23:59:59.000Z"
+    },
+    {
+      "id": "e135",
+      "longUrl": "https://example.com",
+      "shortUrl": "xbmsiuqj",
+      "expiryDate": "2024-12-31"
+    },
+    {
+      "id": "6bbb",
+      "longUrl": "https://example.com",
+      "shortUrl": "vxp2nlbf",
+      "clickCount": 0,
+      "expiryDate": "2024-12-31"
+    },
+    {
+      "id": "f0af",
+      "longUrl": "https://example.com",
+      "shortUrl": "w3r7qzla",
+      "clickCount": 0,
+      "expiryDate": "2024-12-31"
+    },
+    {
+      "id": "ce52",
+      "longUrl": "https://example.com",
+      "shortUrl": "9hzeggp5",
+      "clickCount": 0,
+      "expiryDate": "2024-12-31"
+    }
+  ]
+}

@@ -1,14 +1,12 @@
 import { Router } from "express";
-import { validationResult } from "express-validator";
-import { createUrlValidator } from "../validators/create-url-validator.js";
+import { createUrlValidator, getShortUrlValidator } from "../validators/url.js";
+import validateResult from "../middleware/request-validator-handler.js";
+import { createShortUrlController, getShortUrlControllerById } from "../controllers/url.js";
 
 const router = Router();
 
-router.post('/1.0/shortUrl',createUrlValidator, (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-});
+router.post('/1.0/shortUrl', createUrlValidator, validateResult, createShortUrlController);
+
+router.get('/1.0/shortUrl/:id', getShortUrlValidator, validateResult, getShortUrlControllerById);
 
 export default router;
