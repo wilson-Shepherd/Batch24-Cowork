@@ -21,9 +21,17 @@ export const urlModel = {
     async getUrl(id) {
         try {
             const response = await axios.get(`${baseUrl}/${id}`);
+
+            if (!response.data) {
+                throw new Error(`URL ID = ${id} not found`);
+            };
+
             return response.data;
         } catch (error) {
-            console.error('Error getting url:', error.errors.map(e => e.msg));
+            if (error.response && error.response.status === 404) {
+                throw new Error(`URL ID = ${id} not found`);
+            }
+            console.error('Error getting url:', error.message);
             throw new Error('Error getting url, please try again.');
         }
     }
