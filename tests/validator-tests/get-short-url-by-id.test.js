@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../server.js'; // 導入 Express 應用程序
-import {getShortUrlValidator} from '../../validators/url.js';
+import {getShortUrlByIdValidator} from '../../validators/url.js';
 
 describe('Get Short URL Validator', () => {
     //Test case 1: id is required

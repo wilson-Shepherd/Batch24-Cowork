@@ -1,5 +1,7 @@
 import { urlModel } from '../models/url.js';
 
+const PAGESIZE = 6;
+
 const createShortUrlController = async (req, res, next) => {
     try {
         let { longUrl, expiryDate } = req.body;
@@ -18,25 +20,36 @@ const createShortUrlController = async (req, res, next) => {
         //將longUrl、expiryDate存入資料庫
         const urlId = await urlModel.saveUrl(longUrl, shortUrl, clickCount, expiryDate);
 
-        res.status(201).json({ id:urlId });
+        res.status(201).json({ id: urlId });
     } catch (error) {
         next(error);
     }
 };
 
-const getShortUrlControllerById = async (req, res, next) => {
+const getShortUrlController = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.paging, 10) || 0;
+        const pageSize = PAGESIZE;
+        const { allUrls, nextPage } = await urlModel.getAllUrls(page, pageSize);
+        res.status(200).json({ data: allUrls, next_page: nextPage });
+    }catch (error) {
+        next(error);
+    }
+};
+
+const getShortUrlByIdController = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const url = await urlModel.getUrl(id);
+        const urlData = await urlModel.getUrl(id);
 
-        if (!url) {
+        if (!urlData) {
             return res.status(404).json({ message: 'Short url not found' });
         }
 
-        res.status(200).json(url);
+        res.status(200).json(urlData);
     } catch (error) {
         next(error);
     }
 };
 
-export { createShortUrlController, getShortUrlControllerById };
+export { createShortUrlController, getShortUrlByIdController, getShortUrlController };
