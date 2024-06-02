@@ -34,14 +34,23 @@ const createShortUrlController = async (req, res, next) => {
     //方法三：經過base62，將隨機字串轉換
     // const shortUrl = generateRandomString(7).substring(0, 7);
     //方法四：經過base62，將隨機字串轉換
-    const shortUrl = hashURL(longUrl).substring(0, 7);
-
-    //設定clickCount為0
-    const clickCount = 0;
 
     //將longUrl、expiryDate存入資料庫 json-server for testing
+    //const clickCount = 0;
     // const urlId = await urlModel.saveUrl(longUrl, shortUrl, clickCount, expiryDate);
+
+    //Method-1  Base62 from longUrl
+    const shortUrl = hashURL(longUrl).substring(0, 7);
     const urlId = await newUrl(conn, longUrl, shortUrl);
+
+    //Method-2 prefix data sharding
+    // const urlId = await dbPrefixSharding(longUrl, shortUrl);
+
+    //Method-3 kgsCache
+    // const urlId = await kgsCacheToDB(longUrl);
+
+    //Method-4 range data sharding
+    // const urlId = await dbRangeSharding(longUrl);
 
     res.status(201).json({ id: urlId });
   } catch (error) {

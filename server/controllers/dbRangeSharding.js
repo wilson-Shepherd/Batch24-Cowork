@@ -12,7 +12,7 @@ let DBs_STD = [];
 let DBs_COUNT = [];
 
 //因為 short  key 不重複，所以也不需要管 lock
-async function dbRangeSharding(long, short) {
+async function dbRangeSharding(long) {
   const { index, value } = getShardingGroups(pools.length);
   const newShort = encodeBase62(value);
   const conn = await pools[index].getConnection();
