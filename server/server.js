@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import urlRouter from './routes/url.js';
+import redirectRouter from './routes/redirectUrl.js'
 import { errorHandler } from './middleware/errorHandler.js';
 import fs from 'fs';
 import path from 'path';
@@ -36,6 +37,8 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/api', urlRouter);
+
+app.use('/', redirectRouter)
 
 app.use(errorHandler);
 
