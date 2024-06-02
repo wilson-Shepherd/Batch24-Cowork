@@ -1,9 +1,9 @@
 import connections from "./database/connDB.js";
 import funcDB from "./database/funcDB.js";
-const { newUrl, updateClicks, getUrl, deleteUrl } = funcDB;
+const { newUrl, updateClicks, getUrl, deleteUrl, countUrl } = funcDB;
 
 const pool = connections[0];
-const DATA_NUMBER = 2;
+const DATA_NUMBER = 10;
 
 async function createUrlTable() {
   const urlTable = await pool.query(
@@ -13,7 +13,7 @@ async function createUrlTable() {
         \`shorts\` VARCHAR(760) NULL COMMENT 'Short URL',
         \`clicks\` BIGINT NOT NULL DEFAULT 0 COMMENT 'Clicks Count',
         \`timestamp\` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT shorts_unique UNIQUE (shorts) 
+        CONSTRAINT shorts_unique UNIQUE (shorts)
     );`
   );
   if (urlTable) console.log("urlTable is ready for service.");
@@ -24,7 +24,11 @@ async function genNewData() {
   await createUrlTable();
   for (let i = 0; i < DATA_NUMBER; i++) {
     const idx = i % longs.length;
-    await newUrl(conn, longs[idx], `https://www.example.com/${i + 1}`);
+    const id = await newUrl(
+      conn,
+      longs[idx],
+      `https://www.example.com/${i + 1}`
+    );
   }
   console.log("end");
 }
@@ -43,13 +47,21 @@ async function getData() {
 async function deleteData() {
   const conn = await pool.getConnection();
   await createUrlTable();
-  deleteUrl(conn, "https://www.example.com/1");
+  await deleteUrl(conn, "https://www.example.com/1");
   console.log("end");
 }
-// genNewData();
+async function countData() {
+  const conn = await pool.getConnection();
+  await createUrlTable();
+  const count = await countUrl(conn);
+  console.log(count);
+  console.log("end");
+}
+genNewData();
 // updateData();
 // getData();
-deleteData();
+// deleteData();
+// countData();
 
 const longs = [
   "https://wordpress.com/zh-tw/support/com-vs-org/#overview-of-differences",
