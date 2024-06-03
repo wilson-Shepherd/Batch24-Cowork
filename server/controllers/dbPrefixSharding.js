@@ -28,6 +28,7 @@ async function insertWithLock(index, long, short) {
   } catch (err) {
     await conn.rollback();
     console.error("prefixSharding insert error:" + err.message);
+    throw err;
   } finally {
     conn.release();
     console.log("prefixSharding is released.");

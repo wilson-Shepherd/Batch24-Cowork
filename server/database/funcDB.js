@@ -68,12 +68,12 @@ async function getUrl(conn, start, pageSize, search = "") {
           ${condition}
           LIMIT ?, ?;
       `,
-    [start, pageSize + 1]
+    [start * pageSize, pageSize + 1]
   );
   // console.log("select rows %j", rows);
   //[{"id":4,"longs":"https://blog.medium.com/bnp-editors-9c0a6f5a133a","shorts":"https://www.example.com/2","clicks":0}]
+  const nextPage = rows.length == 7 ? start + 1 : null;
   const allUrls = rows.splice(0, pageSize);
-  const nextPage = rows.length == 7 ? start + 1 : undefined;
   const result = { allUrls, nextPage };
   return result;
 }
