@@ -1,6 +1,5 @@
 import pools from "../database/connDB.js";
 import funcDB from "../database/funcDB.js";
-const { newUrl, updateClicks, getAllUrl, getUrl, deleteUrl } = funcDB;
 
 const Groups = [];
 //base62 encoded url
@@ -17,11 +16,25 @@ async function dbPrefixSharding(long, short) {
 
 async function insertWithLock(index, long, short) {
   //lock 耗時（用 unique key 可改善）
+  let urlId = undefined;
   const conn = await pools[index].getConnection();
-  await conn.query(`LOCK TABLES urls READ;`);
-  const result = await newUrl(conn, long, short);
-  await conn.query(`UNLOCK TABLES;`);
-  return result;
+  try {
+    await conn.beginTransaction();
+    //Exclusive Locks
+    await conn.query(`SELECT * FROM urls  FOR UPDATE;`);
+    urlId = await funcDB.newUrl(conn, long, short);
+    await conn.commit();
+    console.log("prefixSharding is commited.");
+  } catch (err) {
+    await conn.rollback();
+    console.error("prefixSharding insert error:" + err.message);
+  } finally {
+    conn.release();
+    console.log("prefixSharding is released.");
+  }
+  return urlId == undefined
+    ? new Error("prefixSharding new Url failed")
+    : urlId;
 }
 
 //一旦分好gorup 很難重新分配
