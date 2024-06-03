@@ -1,7 +1,6 @@
 import pools from "../database/connDB.js";
 import funcDB from "../database/funcDB.js";
-import { encodeBase62 } from "../utils/intToBase62.js";
-const { newUrl, updateClicks, getUrl, deleteUrl, countUrl } = funcDB;
+import { encodeBase62, decodeBase62 } from "../utils/intToBase62.js";
 
 //URL:500 bytes/ea
 //RDS:20 GB * 1024^3 /500 => 42949673 urls
@@ -13,40 +12,38 @@ let DBs_COUNT = [];
 
 //因為 short  key 不重複，所以也不需要管 lock
 async function dbRangeSharding(long) {
-  const { index, value } = getShardingGroups(pools.length);
+  const { index, value } = await getShardingGroups(pools.length);
   const newShort = encodeBase62(value);
   const conn = await pools[index].getConnection();
-  const insertId = await newUrl(conn, long, newShort);
+  const urlId = await funcDB.newUrl(conn, long, newShort);
   DBs_COUNT[index]++;
-  console.log(
-    `db-${index} insert(${newShort}) as id(${insertId}) successfully.`
-  );
+  console.log(`db-${index} insert(${newShort}) as id(${urlId}) successfully.`);
   if (DBs_COUNT[index] > RDS_LIMIT) {
     console.log(`db-${index} is out of limit(${RDS_LIMIT}).`);
   }
-  return index; //return db index
+  return urlId; //return urlId
 }
 
 //缺點是沒有彈性，涉及每台 DB 負責的 range，不易變動
 async function getShardingGroups(num) {
-  if ((DBs_COUNT.length = 0)) {
-    for (let i = 0; i < pools.length; i++) {
+  if (DBs_COUNT.length == 0) {
+    for (let i = 0; i < num; i++) {
       const conn = await pools[i].getConnection();
-      const count = await countUrl(conn);
+      const count = await funcDB.countUrl(conn);
       DBs_STD.push(RDS_START + RDS_LIMIT * i);
       DBs_COUNT.push(count);
     }
   }
   const value = Math.min(...DBs_COUNT);
   const index = DBs_COUNT.indexOf(value);
-  const start = { index, value: DBs_STD[index] + value + 1 };
-  return start;
+  return { index: index, value: DBs_STD[index] + value + 1 };
 }
 
 function checkRangeDB(short) {
-  const number = Number(short.substring(0, RDS_LIMIT.toString().length));
+  const decode = decodeBase62(short);
+  const range = decode - RDS_START;
   for (let i = 0; i < pools.length; i++) {
-    if (number > (i + 1) * RDS_LIMIT && number < (i + 2) * RDS_LIMIT) return i;
+    if (range > i * RDS_LIMIT && number < (i + 1) * RDS_LIMIT) return i;
   }
   throw new Error(`${short} Error! Cannot find responding RangeSharding DB!`);
 }
