@@ -38,11 +38,11 @@ const createShortUrlController = async (req, res, next) => {
     // const urlId = await funcDB.newUrl(conn, longUrl, shortUrl);
 
     //Method-2 prefix data sharding => base62+db sharding
-    const shortUrl = hashURL(longUrl).substring(0, 7);
-    const urlId = await prefixSharding.dbPrefixSharding(longUrl, shortUrl);
+    // const shortUrl = hashURL(longUrl).substring(0, 7);
+    // const urlId = await prefixSharding.dbPrefixSharding(longUrl, shortUrl);
 
     //Method-3 kgsCache
-    // const urlId = await kgsCache.kgsCacheToDB(longUrl);
+    const urlId = await kgsCache.kgsCacheToDB(longUrl);
 
     //Method-4 range data sharding
     // const urlId = await rangeCharding.dbRangeSharding(longUrl);
@@ -85,12 +85,11 @@ const getShortUrlByIdController = async (req, res, next) => {
 
 const redirectByShortUrlController = async (req, res, next) => {
   try {
-    console.log(req.params);
-    const { shortUrl } = req.params;
+    const shortUrl = req.params.shortUrl;
     // const urlData = await urlModel.updateClickCount(shortUrl);
     const update = await funcDB.updateClicks(conn, shortUrl, 1); //count 1 and update db (cache?)
     const urlData = await funcDB.getUrlByShort(conn, shortUrl);
-
+    console.log(urlData);
     if (!urlData.longs) {
       return res.status(404).json({ message: "LongUrl not found" });
     }

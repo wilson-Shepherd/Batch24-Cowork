@@ -24,7 +24,8 @@ async function kgsCacheToDB(long) {
 
 async function getCryptoID() {
   const rawBytes = await randomBytes(KEY_LENGTH);
-  return rawBytes.toString("hex");
+  const key =rawBytes.toString("hex");
+  return key.substring(0,KEY_LENGTH);
 }
 async function setKeys() {
   const keys = [];
@@ -46,4 +47,4 @@ function checkKgsDB(short) {
   return short[0];
 }
 setKeys();
-export default { kgsCacheToDB, checkKgsDB };
+export default { kgsCacheToDB, getCryptoID, checkKgsDB };
