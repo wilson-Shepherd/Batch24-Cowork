@@ -1,23 +1,25 @@
 import cache from "../cache/connRedis.js";
 import redis from "../cache/funcRedis.js";
-const { saddRedis, spopRedis } = redis;
+import pools from "../database/connDB.js";
+import funcDB from "../database/funcDB.js";
 
 import crypto from "crypto";
 import { promisify } from "util";
 const randomBytes = promisify(crypto.randomBytes);
 
 const KEY_LENGTH = 7;
-const KEY_QTY = 500000;
+const KEY_QTY = 5000;
 const CACHE_SET = "UNI_KEYS";
 let insertCount = 0;
 
 async function kgsCacheToDB(long) {
-  const key = await getKey();
-  if (key == undefined) throw new Error("Cache is running out of Unique keys");
+  const short = await getKey();
+  if (short == undefined)
+    throw new Error("Cache is running out of Unique keys");
 
   const index = getShardingGroups(pools.length);
   const conn = await pools[index].getConnection();
-  return await newUrl(conn, long, index.toString() + short);
+  return await funcDB.newUrl(conn, long, index.toString() + short);
 }
 
 async function getCryptoID() {
@@ -29,10 +31,10 @@ async function setKeys() {
   for (let i = 0; i < KEY_QTY; i++) {
     keys.push(await getCryptoID());
   }
-  return await saddRedis(cache[0], CACHE_SET, keys);
+  return await redis.saddRedis(cache[0], CACHE_SET, keys);
 }
 async function getKey() {
-  return await spopRedis(cache[0], CACHE_SET);
+  return await redis.spopRedis(cache[0], CACHE_SET);
 }
 
 function getShardingGroups(num) {
