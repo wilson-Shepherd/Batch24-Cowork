@@ -1,6 +1,6 @@
 import connections from "./database/connDB.js";
 import funcDB from "./database/funcDB.js";
-const { newUrl, updateClicks, getUrl, deleteUrl, countUrl } = funcDB;
+import kgsCache from "./controllers/kgsCache.js";
 
 const pool = connections[0];
 const DATA_NUMBER = 10;
@@ -24,36 +24,33 @@ async function genNewData() {
   await createUrlTable();
   for (let i = 0; i < DATA_NUMBER; i++) {
     const idx = i % longs.length;
-    const id = await newUrl(
-      conn,
-      longs[idx],
-      `https://www.example.com/${i + 1}`
-    );
+    const randomId = await kgsCache.getCryptoID();
+    const id = await funcDB.newUrl(conn, longs[idx], randomId);
   }
   console.log("end");
 }
 async function updateData() {
   const conn = await pool.getConnection();
   await createUrlTable();
-  await updateClicks(conn, "https://www.example.com/1", 1000);
+  await funcDB.updateClicks(conn, "https://www.example.com/1", 1000);
   console.log("end");
 }
 async function getData() {
   const conn = await pool.getConnection();
   await createUrlTable();
-  await getUrl(conn, 0, 6, "blog");
+  await funcDB.getUrl(conn, 0, 6, "blog");
   console.log("end");
 }
 async function deleteData() {
   const conn = await pool.getConnection();
   await createUrlTable();
-  await deleteUrl(conn, "https://www.example.com/1");
+  await funcDB.deleteUrl(conn, "https://www.example.com/1");
   console.log("end");
 }
 async function countData() {
   const conn = await pool.getConnection();
   await createUrlTable();
-  const count = await countUrl(conn);
+  const count = await funcDB.countUrl(conn);
   console.log(count);
   console.log("end");
 }
